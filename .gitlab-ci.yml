@@ -27,4 +27,4 @@ deploy_image:
   only:
     - main
   script:
-    - ssh cluster "./deploy.sh ${CI_REGISTRY_USER} ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY_IMAGE}:latest ${PORT} ${GITLAB_USER_LOGIN} ${CI_PROJECT_NAME}"
+    - ssh cluster "./deploy.sh ${CI_REGISTRY_USER} ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY_IMAGE}:latest ${PORT} ${GITLAB_USER_LOGIN} ${CI_PROJECT_NAME} 8080"
