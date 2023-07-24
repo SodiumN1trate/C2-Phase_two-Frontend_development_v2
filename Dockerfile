@@ -1,7 +1,12 @@
-FROM node:18
+FROM gitlab.skill17.com:5000/competitor-base/vuejs-base:latest
+
+RUN npm install -g http-server
 
 WORKDIR /app
-COPY ./ /app
+COPY package*.json ./
 RUN npm install
+COPY . .
+RUN npm run build
 
-CMD ["bash"]
+EXPOSE 8080
+CMD [ "http-server", "dist" ]
