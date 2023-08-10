@@ -1,35 +1,9 @@
 <template>
   <section>
-<!--    Page title -->
+    <!--    Page title -->
     <page-title title="Checkout these amazing concerts in Graz."/>
-
-<!--    Filtration -->
-    <div class="filtration-container">
-      <label>
-        Artist <br>
-        <select v-model="artist">
-          <option value="null" disabled selected>All Artists</option>
-        </select>
-      </label>
-
-      <label>
-        Location <br>
-        <select v-model="artist">
-          <option value="null" disabled selected>All Locations</option>
-        </select>
-      </label>
-
-      <label>
-        Date <br>
-        <input type="date" v-model="date" placeholder="Date">
-      </label>
-    </div>
-
-
-<!--    Discover concerts -->
-    <div class="concerts-container">
-      <card-component v-for="(concert, index) in concerts" :key="index" :concert="concert"/>
-    </div>
+    <h1>Cav</h1>
+    <card-component/>
   </section>
 </template>
 
