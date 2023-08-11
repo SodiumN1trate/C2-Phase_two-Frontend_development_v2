@@ -11,19 +11,64 @@
 
 
 <!-- Select seats -->
-    <div class="container-large">
+    <div class="container-large" :style="{'flex-direction': formVisible === true ? 'row-reverse' : 'row'}">
       <div class="container-big">
-        <div class="stage">
-          <h2>Stage</h2>
-        </div>
-        <div class="seats">
-          <div class="seat-rows" v-for="(row, index) in seats" :key="index">
-            <small>{{row.name}}</small>
-            <div class="seat-rows-seats">
-              <div class="seat" :data-row="row.id" :data-seat="seat" @click="select(row, seat)" :class="{'seat-available': !row.seats.unavailable.includes(seat), 'seat-unavailable': row.seats.unavailable.includes(seat), 'seat-selected': selected.includes({row: row, seat: seat})}" v-for="(seat, index) in row.seats.total" :key="index"></div>
+        <template v-if="!formVisible">
+          <div class="stage">
+            <h2>Stage</h2>
+          </div>
+          <div class="seats">
+            <div class="seat-rows" v-for="(row, index) in seats" :key="index">
+              <small>{{row.name}}</small>
+              <div class="seat-rows-seats">
+                <div class="seat" :ref="row.id + '.' + seat" :data-row="row.id" :data-seat="seat" @click="select(row, seat)" :class="{'seat-available': !row.seats.unavailable.includes(seat), 'seat-unavailable': row.seats.unavailable.includes(seat)}" v-for="(seat, index) in row.seats.total" :key="index"></div>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <div style="display: flex; width: 100%; padding: 16px;">
+            <div>
+              <h1>Please enter your details</h1>
+
+              <form style="text-align: left; display: flex; flex-direction: column;gap: 15px;">
+                <label>
+                  Name
+                  <br>
+                  <input type="text" />
+                </label>
+
+                <label>
+                  Address
+                  <br>
+                  <input type="text" />
+                </label>
+
+                <label>
+                  ZIP Code
+                  <br>
+                  <input type="text" />
+                </label>
+
+                <label>
+                  City
+                  <br>
+                  <input type="text" />
+                </label>
+
+                <label>
+                  Country
+                  <br>
+                  <select>
+                    <option selected value="">Country</option>
+                  </select>
+                </label>
+                <button>Book</button>
+
+              </form>
+            </div>
+          </div>
+        </template>
       </div>
       <div class="container-small">
         <h1>Selected seats</h1>
@@ -33,7 +78,7 @@
         </div>
         <br>
         <br>
-        <button>Enter Booking Details</button>
+        <button @click="formVisible = !formVisible">{{ formVisible === true ? 'Change seats' : 'Enter Booking Details' }}</button>
       </div>
     </div>
   </section>
@@ -49,7 +94,9 @@ export default {
     return {
       concert: null,
       seats: [],
-      selected: []
+      selected: [],
+      reservation_token: null,
+      formVisible: false
     }
   },
   created() {
@@ -60,15 +107,35 @@ export default {
   },
   methods: {
     select (row, seat) {
+      if(row.seats.unavailable.includes(seat)) {
+        return 0
+      }
       let beforeCount = this.selected.length
       this.selected.map((selectedSeat, index) => {
-        if(this.selected[index].row === row && this.selected[index].seat === seat) {
-          this.selected.slice(index, 1)
+        if(this.selected[index].row.name === row.name && this.selected[index].seat === seat) {
+          this.selected.splice(index, 1)
+          this.$refs[row.id + '.' + seat][0].classList.remove('seat-selected')
         }
       })
       if(beforeCount === this.selected.length) {
         this.selected.push({row: row, seat: seat})
+        this.$refs[row.id + '.' + seat][0].classList.add('seat-selected')
       }
+
+      const reservations = this.selected.map((row) => {
+        return {
+          row: row.row.id,
+          seat: row.seat
+        }
+      })
+      this.axios.post('/concerts/' + this.concert.id + '/shows/' + this.concert.shows[0].id + '/reservation',
+          {
+            reservation_token: this.reservation_token,
+            reservations: reservations
+          }
+      ).then((response) => {
+        this.reservation_token = response.data.reservation_token
+      })
     }
   }
 }
@@ -181,5 +248,6 @@ section > div {
   border-radius: 50%;
   width: 15px;
   height: 15px;
+  user-select: none;
 }
 </style>

@@ -15,8 +15,11 @@ export default {
   },
   methods: {
     getDate (date) {
-      date =  new Date(date)
-      return date.getHours() + ':' + date.getUTCMinutes()
+      // Taken from the internet
+      return new Date(date).toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     },
     store () {
       localStorage.setItem('card', JSON.stringify(this.concert))

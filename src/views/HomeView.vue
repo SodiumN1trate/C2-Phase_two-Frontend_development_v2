@@ -7,28 +7,31 @@
     <div class="filtration-container">
       <label>
         Artist <br>
-        <select v-model="artist">
-          <option value="null" disabled selected>All Artists</option>
+        <select @change="filter" v-model="artist">
+          <option value="" selected>All Artists</option>
+          <option  v-for="(artist, index) in artists" :key="index" :value="artist">{{ artist }}</option>
         </select>
       </label>
 
       <label>
         Location <br>
-        <select v-model="artist">
-          <option value="null" disabled selected>All Locations</option>
+        <select @change="filter" v-model="location">
+          <option value="" selected>All Locations</option>
+          <option  v-for="(location, index) in locations" :key="index" :value="location">{{ location }}</option>
         </select>
       </label>
 
       <label>
         Date <br>
-        <input type="date" v-model="date" placeholder="Date">
+        <input @change="filter" type="date" v-model="date" placeholder="Date">
       </label>
+      <button @click="clearFilter()" v-if="artist !== '' || location !== '' ">clear</button>
     </div>
 
 
 <!--    Discover concerts -->
     <div class="concerts-container">
-      <card-component v-for="(concert, index) in concerts" :key="index" :concert="concert"/>
+      <card-component v-for="(concert, index) in concerts" :key="index" :concert="concert" v-show="concert.show"/>
     </div>
   </section>
 </template>
@@ -42,9 +45,9 @@ export default {
   data () {
     return {
       artists: [],
-      artist: null,
+      artist: '',
       locations: [],
-      location: null,
+      location: '',
       date: null,
       concerts: []
     }
@@ -52,7 +55,44 @@ export default {
   async mounted () {
     await this.axios.get('/concerts').then((response) => {
       this.concerts = response.data.concerts
+
+      this.concerts = this.concerts.map((concert) => {
+        if (!this.artists.includes(concert.artist)) {
+          this.artists.push(concert.artist)
+        }
+        if (!this.locations.includes(concert.location.name)) {
+          this.locations.push(concert.location.name)
+        }
+
+        concert.show = true
+        return concert
+      })
     })
+  },
+  methods: {
+    filter () {
+      this.concerts.map((concert, index) => {
+        this.concerts[index].show = true
+
+        if (this.artist && concert.artist !== this.artist) {
+          this.concerts[index].show = false
+        }
+
+        if (this.location && concert.location.name !== this.location) {
+          this.concerts[index].show = false
+        }
+
+        if (this.date && new Date(concert.shows[0].start).toLocaleDateString() !== new Date(this.location).toLocaleDateString()) {
+          this.concerts[index].show = false
+        }
+      })
+    },
+    clearFilter () {
+      this.artist = ''
+      this.location = ''
+      this.date = ''
+      this.filter()
+    }
   }
 }
 </script>
@@ -70,6 +110,10 @@ section > div {
   justify-content: center;
   flex-wrap: wrap;
   gap: 50px;
+}
+
+.filtration-container {
+  align-items: flex-end !important;
 }
 
 .concerts-container {
